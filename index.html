@@ -40,12 +40,27 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
   <!-- ============================================================== -->
   <!-- 0. ÉCRAN D'AUTHENTIFICATION & DROITS D'ACCÈS (VISIBLE PAR DÉFAUT) -->
   <!-- ============================================================== -->
-  <div id="authScreenModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 min-h-screen overflow-y-auto">
+  <div id="authScreenModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md min-h-screen overflow-y-auto">
+    
+    <!-- Logo & Lien Weesifi (Haut à droite sur l'écran d'accueil) -->
+    <div class="fixed top-4 right-4 sm:top-6 sm:right-6 z-50">
+      <a 
+        href="https://weesifi.com/" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        title="Weesifi — Formation commerciale & méthode de vente B2B"
+        class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 shadow-2xl transition-all duration-200 hover:scale-105 border border-slate-200 group"
+      >
+        <img src="assets/logo-weesifi.png" alt="Weesifi — Formation commerciale & méthode de vente B2B" class="h-6 sm:h-7 w-auto object-contain">
+        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 group-hover:text-purple-600 transition"></i>
+      </a>
+    </div>
+
     <div class="glass-panel bg-slate-900 border border-slate-700/80 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative my-auto">
       
       <!-- Logo Header -->
@@ -383,6 +398,18 @@
             <i class="fa-solid fa-right-from-bracket text-rose-400"></i>
             <span class="hidden sm:inline">Déconnexion</span>
           </button>
+
+          <!-- Logo & Lien Weesifi (Haut à droite) -->
+          <a 
+            href="https://weesifi.com/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            title="Weesifi — Formation commerciale & méthode de vente B2B"
+            class="flex items-center space-x-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-900 shadow-md transition-all duration-200 hover:scale-105 border border-slate-200 group ml-1"
+          >
+            <img src="assets/logo-weesifi.png" alt="Weesifi — Formation commerciale & méthode de vente B2B" class="h-5 sm:h-7 w-auto object-contain">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 group-hover:text-purple-600 transition hidden sm:inline"></i>
+          </a>
         </div>
       </div>
 
@@ -730,11 +757,15 @@
   </main>
 
   <!-- FOOTER -->
-  <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+  <footer class="border-t border-slate-900/80 bg-slate-950/70 backdrop-blur-md py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
       <div class="flex items-center space-x-2">
-        <span class="font-bold text-slate-400">Acquisition Quest B2B</span>
-        <span>• Application pédagogique Weesifi Formation</span>
+        <span class="font-bold text-slate-300">Acquisition Quest B2B</span>
+        <span>•</span>
+        <a href="https://weesifi.com/" target="_blank" rel="noopener noreferrer" class="font-semibold text-indigo-400 hover:text-indigo-300 underline underline-offset-2 flex items-center space-x-1">
+          <span>Weesifi — Formation commerciale & méthode de vente B2B</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+        </a>
       </div>
       <div>
         <span>Accès sécurisé pour Thibaut Ducleuziou & Étudiants Bachelor</span>
