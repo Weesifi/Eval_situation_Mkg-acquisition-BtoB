@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acquisition Quest B2B | Évaluation Diagnostique & Situations Pro (Niveau Bachelor)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js for Radar & Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ============================================================== -->
+  <!-- 0. ÉCRAN D'AUTHENTIFICATION & DROITS D'ACCÈS (VISIBLE PAR DÉFAUT) -->
+  <!-- ============================================================== -->
+  <div id="authScreenModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950 min-h-screen overflow-y-auto">
+    <div class="glass-panel bg-slate-900 border border-slate-700/80 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative my-auto">
+      
+      <!-- Logo Header -->
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-rose-600 flex items-center justify-center text-white text-2xl mx-auto shadow-xl shadow-indigo-500/20 glow-indigo">
+          <i class="fa-solid fa-crosshairs"></i>
+        </div>
+        <div>
+          <h2 class="text-2xl font-black text-white tracking-tight">ACQUISITION <span class="text-gradient">QUEST B2B</span></h2>
+          <p class="text-xs text-slate-400">Weesifi Formation • Évaluation de situation Bachelor</p>
+        </div>
+      </div>
+
+      <!-- 3 Auth Mode Switch Tabs -->
+      <div class="grid grid-cols-3 gap-1 p-1 bg-slate-950/90 rounded-2xl border border-slate-800 text-[11px] font-bold">
+        <button onclick="setAuthTab('login')" id="authTabBtn_login" class="py-2.5 rounded-xl transition bg-indigo-600 text-white shadow">
+          Connexion
+        </button>
+        <button onclick="setAuthTab('register')" id="authTabBtn_register" class="py-2.5 rounded-xl transition text-slate-400 hover:text-white">
+          Inscription
+        </button>
+        <button onclick="setAuthTab('trainer')" id="authTabBtn_trainer" class="py-2.5 rounded-xl transition text-amber-400 hover:text-amber-300 hover:bg-amber-950/20">
+          <i class="fa-solid fa-lock text-[10px] mr-1"></i>Formateur
+        </button>
+      </div>
+
+      <!-- FORM 1 : CONNEXION ÉTUDIANT -->
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-300">Nom & Prénom de l'étudiant</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input 
+              type="text" 
+              id="loginIdentifier" 
+              required
+              placeholder="ex: Lucas Bernard ou Emma Moreau" 
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-300">Mot de passe</label>
+            <button type="button" onclick="openForgotPasswordModal()" class="text-[11px] text-indigo-400 hover:text-indigo-300 transition">
+              Mot de passe oublié ?
+            </button>
+          </div>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              required
+              placeholder="Votre mot de passe" 
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            >
+            <button type="button" onclick="togglePasswordVisibility('loginPassword')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
+          <span>Se connecter à mon espace étudiant</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </button>
+
+        <div class="pt-2 text-center text-xs text-slate-400">
+          Pas encore inscrit ? <button type="button" onclick="setAuthTab('register')" class="text-indigo-400 font-bold hover:underline">Créer un compte</button>
+        </div>
+      </form>
+
+      <!-- FORM 2 : NOUVELLE INSCRIPTION PARTICIPANT -->
+      <form id="registerForm" onsubmit="handleRegisterSubmit(event)" class="space-y-3.5 hidden">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-300">Nom</label>
+            <input 
+              type="text" 
+              id="regNom" 
+              required 
+              placeholder="ex: Dupont" 
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-300">Prénom</label>
+            <input 
+              type="text" 
+              id="regPrenom" 
+              required 
+              placeholder="ex: Camille" 
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-300">Niveau d'études</label>
+            <select id="regNiveau" required class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <option value="Bachelor 3" selected>Bachelor 3 (Bac+3)</option>
+              <option value="Bachelor 2">Bachelor 2 (Bac+2)</option>
+              <option value="Bachelor 1">Bachelor 1 (Bac+1)</option>
+              <option value="Mastère 1">Mastère 1 (Bac+4)</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-300">Promotion</label>
+            <input 
+              type="text" 
+              id="regPromo" 
+              required 
+              placeholder="ex: B3-MKT-2026" 
+              value="B3-MKT-2026"
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            >
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-300">Mot de passe à créer</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="regPassword" 
+              required 
+              placeholder="Créez votre mot de passe" 
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            >
+            <button type="button" onclick="togglePasswordVisibility('regPassword')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-300">Confirmer le mot de passe</label>
+          <input 
+            type="password" 
+            id="regPasswordConfirm" 
+            required 
+            placeholder="Confirmez votre mot de passe" 
+            class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+          >
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
+          <span>Créer mon compte et démarrer</span>
+          <i class="fa-solid fa-check text-[10px]"></i>
+        </button>
+      </form>
+
+      <!-- FORM 3 : CONNEXION FORMATEUR (BACK OFFICE) -->
+      <form id="trainerLoginForm" onsubmit="handleTrainerLoginSubmit(event)" class="space-y-4 hidden">
+        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center space-x-2">
+          <i class="fa-solid fa-shield-halved text-base"></i>
+          <span>Accès réservé à la direction pédagogique et au formateur.</span>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-300">Email formateur</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input 
+              type="email" 
+              id="trainerEmailInput" 
+              required
+              placeholder="ex: formateur@weesifi.com"
+              autocomplete="off"
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+            >
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-300">Mot de passe formateur</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input 
+              type="password" 
+              id="trainerPasswordInput" 
+              required
+              placeholder="••••••••"
+              autocomplete="off"
+              class="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+            >
+            <button type="button" onclick="togglePasswordVisibility('trainerPasswordInput')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Se connecter au Back Office Formateur</span>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL : RENOUVELLEMENT DE MOT DE PASSE OUBLIÉ -->
+  <div id="forgotPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm hidden">
+    <div class="glass-panel bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+      <button onclick="closeForgotPasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="space-y-1">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <i class="fa-solid fa-key text-indigo-400"></i>
+          <span>Renouvellement de mot de passe</span>
+        </h3>
+        <p class="text-xs text-slate-400">Renseignez votre nom, prénom et promotion pour réinitialiser votre accès.</p>
+      </div>
+
+      <form id="resetPassForm" onsubmit="handleResetPasswordSubmit(event)" class="space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="resetNom" required placeholder="Votre Nom" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+          <input type="text" id="resetPrenom" required placeholder="Votre Prénom" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+        </div>
+        <input type="text" id="resetPromo" required placeholder="Votre Promotion (ex: B3-MKT-2026)" value="B3-MKT-2026" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+        
+        <div class="pt-1">
+          <label class="text-[11px] font-bold text-slate-300">Nouveau mot de passe souhaité</label>
+          <input type="password" id="resetNewPass" required placeholder="Nouveau mot de passe" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white mt-1">
+        </div>
+
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition">
+          Valider le nouveau mot de passe
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL : CONNEXION FORMATEUR EN COURS DE NAVIGATION -->
+  <div id="adminAuthModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden">
+    <div class="glass-panel bg-slate-900 border border-amber-500/40 rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative">
+      <button onclick="closeAdminAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-white">Accès Back Office Formateur</h3>
+          <p class="text-xs text-slate-400">Veuillez confirmer vos identifiants Weesifi</p>
+        </div>
+      </div>
+
+      <form onsubmit="handleDirectAdminLogin(event)" class="space-y-4">
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-300">Email formateur</label>
+          <input 
+            type="email" 
+            id="modalAdminEmail" 
+            required 
+            placeholder="ex: formateur@weesifi.com"
+            autocomplete="off"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:border-amber-400"
+          >
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-300">Mot de passe</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="modalAdminPassword" 
+              required 
+              placeholder="••••••••"
+              autocomplete="off"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 pr-10 py-2.5 text-xs text-white font-mono focus:border-amber-400"
+            >
+            <button type="button" onclick="togglePasswordVisibility('modalAdminPassword')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition flex items-center justify-center space-x-2">
+          <span>Ouvrir le Back Office Formateur</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOP HEADER / NAV -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('missions')">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 glow-indigo">
+            <i class="fa-solid fa-crosshairs text-xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold text-lg sm:text-xl tracking-tight text-white">ACQUISITION <span class="text-gradient">QUEST B2B</span></span>
+              <span id="headerPromoBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">BACHELOR</span>
+            </div>
+            <p class="text-xs text-slate-400 hidden sm:block">Évaluation de situation & diagnostic pour le cours Marketing d'Acquisition</p>
+          </div>
+        </div>
+
+        <!-- Student Profile & Status Pills -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          
+          <!-- Student/Admin Profile Badge -->
+          <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-xs">
+            <i id="userProfileIcon" class="fa-solid fa-user-graduate text-indigo-400"></i>
+            <span id="studentNameDisplay" class="font-bold text-slate-200 truncate max-w-[140px]">Étudiant(e)</span>
+          </div>
+
+          <!-- Global Score Pill -->
+          <div id="topScorePill" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+            <i class="fa-solid fa-bolt text-emerald-400"></i>
+            <span id="topScoreDisplay">0 pts</span>
+          </div>
+
+          <!-- Sound Toggle -->
+          <button id="soundToggleBtn" onclick="toggleSound()" title="Activer/Couper les effets sonores" class="w-8 h-8 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 hover:text-white transition text-xs">
+            <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+          </button>
+
+          <!-- Logout Button (Prominent & Clear) -->
+          <button onclick="handleLogout()" title="Se déconnecter" class="px-3 py-1.5 rounded-lg bg-slate-800/60 hover:bg-rose-950/60 text-slate-300 hover:text-rose-400 border border-slate-700/60 hover:border-rose-500/40 text-xs font-semibold flex items-center space-x-1.5 transition">
+            <i class="fa-solid fa-right-from-bracket text-rose-400"></i>
+            <span class="hidden sm:inline">Déconnexion</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex space-x-1 sm:space-x-2 overflow-x-auto pb-2 sm:pb-3 scrollbar-none text-xs sm:text-sm font-medium border-t border-slate-800/50 pt-2">
+        <button onclick="switchTab('missions')" id="tab-btn-missions" class="nav-tab-btn active px-3.5 py-2 rounded-lg flex items-center space-x-2 transition whitespace-nowrap bg-indigo-600 text-white font-semibold">
+          <i class="fa-solid fa-briefcase"></i>
+          <span>Missions en Situation</span>
+          <span id="missionsCountBadge" class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 text-white font-bold">6 cas</span>
+        </button>
+
+        <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="nav-tab-btn px-3.5 py-2 rounded-lg flex items-center space-x-2 transition whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+          <i class="fa-solid fa-stopwatch"></i>
+          <span>Défi Vocabulaire Express</span>
+          <span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-slate-700 text-slate-300 font-bold">Quiz chrono</span>
+        </button>
+
+        <button onclick="switchTab('glossaire')" id="tab-btn-glossaire" class="nav-tab-btn px-3.5 py-2 rounded-lg flex items-center space-x-2 transition whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+          <i class="fa-solid fa-book-bookmark"></i>
+          <span>Grand Glossaire & Outils</span>
+          <span id="glossaryCountBadge" class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-slate-700 text-slate-300 font-bold">44 termes</span>
+        </button>
+
+        <button onclick="switchTab('bilan')" id="tab-btn-bilan" class="nav-tab-btn px-3.5 py-2 rounded-lg flex items-center space-x-2 transition whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Mon Bilan & Diagnostic</span>
+          <span class="pulse-badge w-2 h-2 rounded-full bg-emerald-400"></span>
+        </button>
+
+        <!-- BACK OFFICE TAB -->
+        <button onclick="switchTab('backoffice')" id="tab-btn-backoffice" class="nav-tab-btn px-3.5 py-2 rounded-lg flex items-center space-x-2 transition whitespace-nowrap text-amber-400 hover:text-amber-300 hover:bg-amber-950/30 border border-amber-500/30 font-bold">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Back Office Formateur</span>
+          <span class="ml-1 text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-extrabold">20 étudiants</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    
+    <!-- ========================================== -->
+    <!-- TAB 1 : MISSIONS EN SITUATION (CORE DIAC)  -->
+    <!-- ========================================== -->
+    <section id="tab-missions" class="tab-content active space-y-6">
+      
+      <!-- Mission Welcome Banner -->
+      <div class="relative overflow-hidden rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-indigo-500/20 shadow-xl">
+        <div class="relative z-10 max-w-3xl space-y-3">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span id="bannerPromoDisplay">Évaluation Diagnostique Initiale • Niveau Bachelor</span>
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Mettez-vous dans la peau d'un <span class="text-gradient">Marketeur d'Acquisition B2B</span>
+          </h1>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+            Plongez dans 6 situations réelles d'entreprises tech et B2B. Vos choix révèlent votre maîtrise des concepts clés : Inbound vs Outbound, GTM, TAM/SAM/SOM, MQL vs SQL, MarTech, Prospection et IA 2025+.
+          </p>
+          <div class="flex flex-wrap gap-4 pt-2 text-xs text-slate-400">
+            <span class="flex items-center"><i class="fa-regular fa-clock mr-1.5 text-indigo-400"></i> Durée estimée : 20-30 min</span>
+            <span class="flex items-center"><i class="fa-solid fa-crosshairs mr-1.5 text-emerald-400"></i> 18 décisions stratégiques</span>
+            <span class="flex items-center"><i class="fa-solid fa-award mr-1.5 text-amber-400"></i> Diagnostic personnalisé & Radar de compétences</span>
+          </div>
+        </div>
+        <div class="absolute -right-8 -bottom-10 opacity-10 text-indigo-400 text-9xl pointer-events-none">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+      </div>
+
+      <!-- Missions Grid / Mission Runner Container -->
+      <div id="missionViewContainer" class="space-y-6"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2 : DÉFI VOCABULAIRE EXPRESS           -->
+    <!-- ========================================== -->
+    <section id="tab-quiz" class="tab-content space-y-6">
+      <div id="quizContainer" class="space-y-6"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3 : GRAND GLOSSAIRE & OUTILS MARTECH  -->
+    <!-- ========================================== -->
+    <section id="tab-glossaire" class="tab-content space-y-6">
+      
+      <!-- Glossary Header & Search Bar -->
+      <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-book-open-reader text-indigo-400"></i>
+              <span>Le Grand Glossaire de l'Acquisition B2B</span>
+            </h2>
+            <p class="text-slate-400 text-xs sm:text-sm">
+              Référentiel complet de vocabulaire, définitions officielles, cas d'usage réels et outils MarTech.
+            </p>
+          </div>
+          
+          <div class="flex items-center space-x-2">
+            <button id="glossaryViewToggleBtn" onclick="toggleGlossaryMode()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-2 border border-slate-700 transition">
+              <i class="fa-solid fa-layer-group text-indigo-400"></i>
+              <span id="glossaryModeLabel">Mode Flashcards (Révision)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input 
+            type="text" 
+            id="glossarySearchInput" 
+            oninput="filterGlossary()" 
+            placeholder="Rechercher un terme, un outil (Lemlist, HubSpot, Reverse IP...), un concept (MQL, ABM, TAM)..." 
+            class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner"
+          >
+          <button onclick="clearGlossarySearch()" id="clearSearchBtn" class="hidden absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="flex flex-wrap gap-2 pt-1" id="categoryFilterContainer"></div>
+      </div>
+
+      <!-- Glossary Terms Grid / Flashcard Container -->
+      <div id="glossaryContentContainer"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4 : BILAN & DIAGNOSTIC DE L'ÉTUDIANT   -->
+    <!-- ========================================== -->
+    <section id="tab-bilan" class="tab-content space-y-6">
+      
+      <!-- Student Diagnostic Header -->
+      <div class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-6">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 border-b border-slate-800 pb-6">
+          <div class="space-y-2">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold">
+              <i class="fa-solid fa-id-card"></i>
+              <span>Bilan Pédagogique Initial • Bachelor Marketing</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white">
+              Diagnostic de Situation de <span id="reportStudentName" class="text-gradient">l'Étudiant(e)</span>
+            </h2>
+            <p class="text-slate-400 text-xs sm:text-sm">
+              Évaluation diagnostique des acquis et réflexes stratégiques en amont du module Marketing d'Acquisition B2B.
+            </p>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap items-center gap-3 no-print">
+            <button onclick="copyReportToClipboard()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-2 border border-slate-700 transition">
+              <i class="fa-solid fa-clipboard text-indigo-400"></i>
+              <span>Copier le Bilan (Netyparéo)</span>
+            </button>
+            <button onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center space-x-2 shadow-lg shadow-indigo-600/20 transition">
+              <i class="fa-solid fa-print"></i>
+              <span>Imprimer / Sauvegarder PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Top Overview Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="glass-card rounded-xl p-4 border border-slate-800">
+            <span class="text-slate-400 text-xs font-medium">Score Global</span>
+            <div class="text-2xl font-black text-white mt-1" id="reportTotalScore">0 pts</div>
+            <span class="text-[11px] text-slate-400" id="reportScorePercent">0% de réussite</span>
+          </div>
+
+          <div class="glass-card rounded-xl p-4 border border-slate-800">
+            <span class="text-slate-400 text-xs font-medium">Missions Complétées</span>
+            <div class="text-2xl font-black text-indigo-400 mt-1" id="reportMissionsProgress">0 / 6</div>
+            <span class="text-[11px] text-slate-400">Cas d'entreprise réels</span>
+          </div>
+
+          <div class="glass-card rounded-xl p-4 border border-slate-800">
+            <span class="text-slate-400 text-xs font-medium">Défi Vocabulaire</span>
+            <div class="text-2xl font-black text-emerald-400 mt-1" id="reportQuizProgress">Non réalisé</div>
+            <span class="text-[11px] text-slate-400">Quiz chrono</span>
+          </div>
+
+          <div class="glass-card rounded-xl p-4 border border-slate-800">
+            <span class="text-slate-400 text-xs font-medium">Profil Diagnostiqué</span>
+            <div class="text-sm font-bold text-amber-300 mt-2 truncate" id="reportArchetype">En cours...</div>
+            <span class="text-[11px] text-slate-400">Selon vos décisions</span>
+          </div>
+        </div>
+
+        <!-- Radar Chart + Recommendations Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+          <div class="lg:col-span-6 glass-card rounded-2xl p-6 border border-slate-800 flex flex-col items-center justify-center">
+            <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center space-x-2 w-full">
+              <i class="fa-solid fa-radar text-indigo-400"></i>
+              <span>Radar des Compétences d'Acquisition</span>
+            </h3>
+            <div class="w-full max-w-md aspect-square relative">
+              <canvas id="competencyRadarChart"></canvas>
+            </div>
+          </div>
+
+          <div class="lg:col-span-6 space-y-4">
+            <div class="glass-card rounded-2xl p-6 border border-slate-800 space-y-3">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl">
+                  <i id="archetypeIcon" class="fa-solid fa-user-astronaut"></i>
+                </div>
+                <div>
+                  <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Votre Profil d'Acquisition B2B</span>
+                  <h4 id="archetypeName" class="text-lg font-extrabold text-white">Apprenti(e) Stratège de Marché</h4>
+                </div>
+              </div>
+              <p id="archetypeDesc" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 border border-slate-800 space-y-3">
+              <h4 class="text-sm font-bold text-slate-200 flex items-center space-x-2">
+                <i class="fa-solid fa-bullseye text-rose-400"></i>
+                <span>Recommandations prioritaires pour le cours :</span>
+              </h4>
+              <ul id="recommendationsList" class="space-y-2 text-xs sm:text-sm text-slate-300"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 5 : BACK OFFICE FORMATEUR & ANALYSE COLLECTIVE WEESIFI     -->
+    <!-- ============================================================== -->
+    <section id="tab-backoffice" class="tab-content space-y-6">
+      
+      <!-- Back Office Master Banner -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 space-y-4 shadow-2xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+          <div class="space-y-1">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>Back Office Pédagogique • Weesifi Formation</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black text-white">
+              Synthèse Collective de la Promotion
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-400">
+              Formateur connecté : <strong class="text-amber-300" id="backofficeTrainerName">Thibaut Ducleuziou</strong> (<span id="backofficeTrainerEmail">thibaut.ducleuziou@weesifi.com</span>)
+            </p>
+          </div>
+
+          <!-- Promo Filter & Action Controls -->
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="backofficePromoFilter" onchange="filterBackofficeByPromo()" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 font-semibold">
+              <option value="all">Toutes les Promotions</option>
+              <option value="B3-MKT-2026" selected>Promo B3-MKT-2026</option>
+            </select>
+            <button onclick="refreshBackofficeData()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-arrows-rotate text-indigo-400"></i>
+              <span>Actualiser</span>
+            </button>
+            <button onclick="exportBackofficeCSV()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-file-csv"></i>
+              <span>Exporter Notes (CSV)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Collective KPIs -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+          <div class="glass-card rounded-2xl p-4 border border-slate-800">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Participants Évalués</span>
+            <div class="text-2xl font-black text-white mt-1" id="kpiTotalStudents">20</div>
+            <span class="text-[11px] text-indigo-400 font-medium">Bachelor 3</span>
+          </div>
+
+          <div class="glass-card rounded-2xl p-4 border border-slate-800">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Moyenne Mises en Situation</span>
+            <div class="text-2xl font-black text-amber-400 mt-1" id="kpiAvgScenario">13.5 / 20</div>
+            <span class="text-[11px] text-slate-400" id="kpiAvgScenarioPercent">67% de réussite</span>
+          </div>
+
+          <div class="glass-card rounded-2xl p-4 border border-slate-800">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Moyenne Défi Vocabulaire</span>
+            <div class="text-2xl font-black text-emerald-400 mt-1" id="kpiAvgQuiz">14.2 / 20</div>
+            <span class="text-[11px] text-slate-400" id="kpiAvgQuizPercent">71% de réussite</span>
+          </div>
+
+          <div class="glass-card rounded-2xl p-4 border border-slate-800">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Alertes Prioritaires</span>
+            <div class="text-2xl font-black text-rose-400 mt-1" id="kpiCriticalCount">4 notions</div>
+            <span class="text-[11px] text-rose-400 font-semibold">&lt; 45% d'assimilation</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOC 1 : SYNTHÈSE GLOBALE - MISES EN SITUATION (2 colonnes comme la maquette) -->
+      <div id="collectiveScenariosContainer"></div>
+
+      <!-- BLOC 2 : SYNTHÈSE GLOBALE - DÉFI VOCABULAIRE (2 colonnes comme la maquette) -->
+      <div id="collectiveQuizContainer"></div>
+
+      <!-- BLOC 3 : LISTE INDIVIDUELLE DES PARTICIPANTS ET LEURS NOTES -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div>
+            <h3 class="text-xl font-extrabold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-users text-amber-400"></i>
+              <span>Liste des Participants & Relevé de Notes</span>
+            </h3>
+            <p class="text-xs text-slate-400">
+              Notes détaillées pour chaque bloc d'évaluation (exportable vers Netyparéo et tableurs).
+            </p>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="copyNetyparéoGrid()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-clipboard text-indigo-400"></i>
+              <span>Copier grille Netyparéo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Participants Table -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="text-[11px] uppercase tracking-wider bg-slate-900/90 text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Participant</th>
+                <th class="py-3 px-4">Promotion / Niveau</th>
+                <th class="py-3 px-4 text-center">Bloc 1 : Mises en Situation</th>
+                <th class="py-3 px-4 text-center">Bloc 2 : Défi Vocabulaire</th>
+                <th class="py-3 px-4 text-center">Note Globale / 20</th>
+                <th class="py-3 px-4 text-center">Statut</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80 bg-slate-950/40" id="participantsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-slate-400">Acquisition Quest B2B</span>
+        <span>• Application pédagogique Weesifi Formation</span>
+      </div>
+      <div>
+        <span>Accès sécurisé pour Thibaut Ducleuziou & Étudiants Bachelor</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL FOR DETAILED GLOSSARY CARD -->
+  <div id="termModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+    <div class="glass-panel bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeTermModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="space-y-2">
+        <span id="modalCategoryBadge" class="text-xs px-2.5 py-1 rounded-full font-bold">Catégorie</span>
+        <h3 id="modalTermTitle" class="text-2xl font-black text-white">Titre du Terme</h3>
+      </div>
+
+      <div class="space-y-4 text-sm text-slate-300">
+        <div class="space-y-1">
+          <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Définition Officielle :</h4>
+          <p id="modalDefinition" class="leading-relaxed bg-slate-950/60 p-4 rounded-xl border border-slate-800"></p>
+        </div>
+
+        <div class="space-y-1">
+          <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Exemple d'Usage Réel B2B :</h4>
+          <p id="modalExample" class="leading-relaxed bg-slate-950/60 p-4 rounded-xl border border-slate-800"></p>
+        </div>
+
+        <div class="space-y-1">
+          <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider">Le Réflexe Bachelor :</h4>
+          <p id="modalTakeaway" class="leading-relaxed bg-amber-950/20 text-amber-200 p-4 rounded-xl border border-amber-500/30"></p>
+        </div>
+
+        <div class="space-y-1">
+          <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider">Outils, Méthodes & Mots-clés :</h4>
+          <div id="modalToolsContainer" class="flex flex-wrap gap-2 pt-1"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAD APPLICATION SCRIPTS (Dans l'ordre) -->
+  <script src="data/glossary.js"></script>
+  <script src="data/scenarios.js"></script>
+  <script src="data/quiz.js"></script>
+  <script src="data/auth.js"></script>
+  <script src="data/analytics.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
