@@ -354,6 +354,61 @@
     </div>
   </div>
 
+  <!-- MODAL : CONFIGURATION BASE DE DONNÉES GOOGLE SHEETS -->
+  <div id="googleSheetModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden">
+    <div class="glass-panel bg-slate-900 border border-emerald-500/40 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl relative">
+      <button onclick="closeGoogleSheetModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-table"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-white">Base de données Google Sheets</h3>
+          <p class="text-xs text-slate-400">Consolidation en temps réel des 20 étudiants</p>
+        </div>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-2">
+        <p class="font-semibold text-emerald-300 flex items-center space-x-1.5">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Comment connecter votre Google Sheet en 2 minutes :</span>
+        </p>
+        <ol class="list-decimal list-inside space-y-1 text-slate-400 pl-1 text-[11px]">
+          <li>Créez un Google Sheet sur votre Drive (ex: <em>Notes Acquisition Quest B2B</em>).</li>
+          <li>Menu <strong>Extensions > Apps Script</strong> : collez le script <code>google-apps-script.js</code>.</li>
+          <li>Cliquez sur <strong>Déployer > Nouveau déploiement > Application Web</strong> (Accès : <em>Tout le monde</em>).</li>
+          <li>Copiez l'URL Web App générée et collez-la ci-dessous.</li>
+        </ol>
+      </div>
+
+      <form onsubmit="handleSaveGoogleSheetUrl(event)" class="space-y-4">
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-300">URL Web App Google Apps Script</label>
+          <input 
+            type="url" 
+            id="modalGSheetUrlInput" 
+            placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:border-emerald-400"
+          >
+          <p id="gsheetTestFeedback" class="text-[11px] text-slate-400 mt-1"></p>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-2">
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-check"></i>
+            <span>Enregistrer et synchroniser</span>
+          </button>
+          <button type="button" onclick="testGoogleSheetConnection()" class="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition">
+            Tester
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- TOP HEADER / NAV -->
   <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -663,12 +718,16 @@
 
           <!-- Promo Filter & Action Controls -->
           <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openGoogleSheetModal()" id="gsheetStatusBtn" class="px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30 transition flex items-center space-x-1.5 shadow-sm">
+              <i class="fa-solid fa-table"></i>
+              <span id="gsheetStatusLabel">Base Google Sheets</span>
+            </button>
             <select id="backofficePromoFilter" onchange="filterBackofficeByPromo()" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 font-semibold">
               <option value="all">Toutes les Promotions</option>
               <option value="B3-MKT-2026" selected>Promo B3-MKT-2026</option>
             </select>
-            <button onclick="refreshBackofficeData()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center space-x-1.5">
-              <i class="fa-solid fa-arrows-rotate text-indigo-400"></i>
+            <button onclick="refreshBackofficeData()" id="refreshBackofficeBtn" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center space-x-1.5">
+              <i id="refreshIcon" class="fa-solid fa-arrows-rotate text-indigo-400"></i>
               <span>Actualiser</span>
             </button>
             <button onclick="exportBackofficeCSV()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition flex items-center space-x-1.5">

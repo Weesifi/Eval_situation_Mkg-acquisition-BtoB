@@ -345,6 +345,7 @@ function handleRegisterSubmit(e) {
 
   users.push(newUser);
   saveRegisteredUsers(users);
+  syncStudentToCloud(newUser);
 
   playSound("complete");
   triggerConfetti(0.5);
@@ -489,6 +490,7 @@ function persistStudentProgress() {
   }
 
   saveRegisteredUsers(users);
+  syncStudentToCloud(users[userIndex]);
 }
 
 // --- SYNTHÈSE SONORE WEB AUDIO API ---
@@ -1773,6 +1775,7 @@ function renderGlobalSynthesisCard({ containerId, blockId, title, badgeText, bad
 }
 
 function renderBackoffice() {
+  updateGoogleSheetStatusUI();
   let users = getRegisteredUsers();
 
   if (APP_STATE.backofficePromoFilter !== "all") {
@@ -1899,10 +1902,112 @@ function filterBackofficeByPromo() {
   renderBackoffice();
 }
 
-function refreshBackofficeData() {
+async function refreshBackofficeData() {
   playSound("click");
-  renderBackoffice();
-  alert("Données du Back Office actualisées avec succès.");
+  const icon = document.getElementById("refreshIcon");
+  if (icon) icon.classList.add("fa-spin");
+
+  try {
+    const cloudUsers = await fetchStudentsFromCloud();
+    renderBackoffice();
+    const count = cloudUsers.length;
+    const url = getGoogleSheetUrl();
+    if (url) {
+      alert(`Synchronisation Google Sheets réussie !\n${count} participant(s) consolidé(s) dans le Back Office.`);
+    } else {
+      alert("Données locales actualisées.\nPour consolider les notes des 20 étudiants à distance, connectez l'URL de votre Google Sheet.");
+    }
+  } catch (err) {
+    renderBackoffice();
+    alert("Données du Back Office actualisées.");
+  } finally {
+    if (icon) icon.classList.remove("fa-spin");
+  }
+}
+
+// Gestion de la modale Google Sheets
+function openGoogleSheetModal() {
+  playSound("click");
+  const modal = document.getElementById("googleSheetModal");
+  const input = document.getElementById("modalGSheetUrlInput");
+  const feedback = document.getElementById("gsheetTestFeedback");
+  if (input) input.value = getGoogleSheetUrl();
+  if (feedback) feedback.textContent = "";
+  if (modal) modal.classList.remove("hidden");
+}
+
+function closeGoogleSheetModal() {
+  const modal = document.getElementById("googleSheetModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+async function handleSaveGoogleSheetUrl(e) {
+  e.preventDefault();
+  const input = document.getElementById("modalGSheetUrlInput");
+  const url = input ? input.value.trim() : "";
+  setGoogleSheetUrl(url);
+  updateGoogleSheetStatusUI();
+  playSound("success");
+  closeGoogleSheetModal();
+  await refreshBackofficeData();
+}
+
+async function testGoogleSheetConnection() {
+  const input = document.getElementById("modalGSheetUrlInput");
+  const feedback = document.getElementById("gsheetTestFeedback");
+  const url = input ? input.value.trim() : "";
+
+  if (!url) {
+    if (feedback) {
+      feedback.textContent = "Veuillez renseigner une URL valide.";
+      feedback.className = "text-[11px] text-rose-400 mt-1";
+    }
+    return;
+  }
+
+  if (feedback) {
+    feedback.textContent = "Test de connexion en cours...";
+    feedback.className = "text-[11px] text-amber-400 mt-1";
+  }
+
+  try {
+    const separator = url.includes("?") ? "&" : "?";
+    const res = await fetch(`${url}${separator}action=getUsers&t=${Date.now()}`);
+    const data = await res.json();
+    if (data && data.status === "success") {
+      playSound("complete");
+      if (feedback) {
+        feedback.textContent = `✓ Connexion réussie ! ${data.count || 0} participant(s) trouvé(s) dans le Google Sheet.`;
+        feedback.className = "text-[11px] text-emerald-400 mt-1 font-semibold";
+      }
+    } else {
+      throw new Error(data.message || "Réponse invalide");
+    }
+  } catch (err) {
+    playSound("error");
+    if (feedback) {
+      feedback.textContent = "✕ Échec : vérifiez que l'application Web est bien déployée avec l'accès 'Tout le monde'.";
+      feedback.className = "text-[11px] text-rose-400 mt-1";
+    }
+  }
+}
+
+function updateGoogleSheetStatusUI() {
+  const btn = document.getElementById("gsheetStatusBtn");
+  const label = document.getElementById("gsheetStatusLabel");
+  const url = getGoogleSheetUrl();
+
+  if (url) {
+    if (btn) {
+      btn.className = "px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/40 transition flex items-center space-x-1.5 shadow-sm";
+    }
+    if (label) label.textContent = "Google Sheets connecté ✓";
+  } else {
+    if (btn) {
+      btn.className = "px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 transition flex items-center space-x-1.5 shadow-sm";
+    }
+    if (label) label.textContent = "Connecter Google Sheets";
+  }
 }
 
 function exportBackofficeCSV() {
