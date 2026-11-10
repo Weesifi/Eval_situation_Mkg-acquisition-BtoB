@@ -1830,7 +1830,20 @@ function renderBackoffice() {
   // 4. Bloc 3 : Tableau des Participants
   const tbody = document.getElementById("participantsTableBody");
   if (tbody) {
-    tbody.innerHTML = users.map(u => {
+    if (users.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="py-12 text-center text-slate-400">
+            <div class="flex flex-col items-center justify-center space-y-2">
+              <i class="fa-solid fa-user-clock text-3xl text-slate-600"></i>
+              <span class="font-semibold text-slate-300 text-xs">Aucun participant enregistré pour le moment</span>
+              <span class="text-[11px] text-slate-400">Les étudiants s'afficheront ici automatiquement avec leurs notes dès leur inscription.</span>
+            </div>
+          </td>
+        </tr>
+      `;
+    } else {
+      tbody.innerHTML = users.map(u => {
       const noteScenario20 = Math.round(((u.scenarioScore || 0) / 100) * 20 * 10) / 10;
       const noteQuiz20 = Math.round(((u.quizScore || 0) / 100) * 20 * 10) / 10;
       const noteFinale20 = Math.round(((noteScenario20 + noteQuiz20) / 2) * 10) / 10;
@@ -1875,6 +1888,7 @@ function renderBackoffice() {
         </tr>
       `;
     }).join("");
+    }
   }
 }
 
